@@ -10,9 +10,13 @@ var _current_speed: float
 @export var _body: Node3D = null
 @export var _spring_arm_offset: Node3D = null
 
+func _ready() -> void:
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
 func _physics_process(_delta:float) -> void:
 	_move()
 	move_and_slide()
+	_body.animate(velocity)
 	
 func _move() -> void:
 	var _input_direction: Vector2 = Input.get_vector(
@@ -27,8 +31,16 @@ func _move() -> void:
 	).normalized()
 	
 	is_running()
-	velocity.x = _direction.x * _current_speed
-	velocity.z = _direction.z * _current_speed
+	_direction = _direction.rotated(Vector3.UP, _spring_arm_offset.rotation.y)
+	if _direction:
+		velocity.x = _direction.x * _current_speed
+		velocity.z = _direction.z * _current_speed
+		_body.apply_rotation(velocity)
+		return
+		
+		velocity.x = move_toward(velocity.x, 0, _current_speed)
+		velocity.z = move_toward(velocity.z, 0, _current_speed)
+		
 	
 func is_running() -> bool:
 	if Input.is_action_pressed("shift"):
